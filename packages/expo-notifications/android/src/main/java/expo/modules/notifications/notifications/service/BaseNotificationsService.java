@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.JobIntentService;
 import expo.modules.notifications.notifications.model.Notification;
 import expo.modules.notifications.notifications.model.NotificationBehavior;
+import expo.modules.notifications.notifications.model.NotificationResponse;
 
 /**
  * A notification service foundation handling incoming intents
@@ -37,6 +38,7 @@ public abstract class BaseNotificationsService extends JobIntentService {
   private static final String PRESENT_TYPE = "present";
   private static final String RECEIVE_TYPE = "receive";
   private static final String DROPPED_TYPE = "dropped";
+  private static final String RESPONSE_TYPE = "response";
 
   private static final Intent SEARCH_INTENT = new Intent(NOTIFICATION_EVENT_ACTION);
   private static final int JOB_ID = BaseNotificationsService.class.getName().hashCode();
@@ -80,6 +82,19 @@ public abstract class BaseNotificationsService extends JobIntentService {
     intent.putExtra(EVENT_TYPE_KEY, RECEIVE_TYPE);
     intent.putExtra(NOTIFICATION_KEY, notification);
     intent.putExtra(RECEIVER_KEY, receiver);
+    enqueueWork(context, intent);
+  }
+
+  /**
+   * A helper function for dispatching a "notification response received" command to the service.
+   *
+   * @param context  Context where to start the service
+   * @param response Notification response received
+   */
+  public static void enqueueResponseReceived(Context context, NotificationResponse response) {
+    Intent intent = new Intent(NOTIFICATION_EVENT_ACTION, getUriBuilderForIdentifier(response.getNotification().getNotificationRequest().getIdentifier()).appendPath("receive").build());
+    intent.putExtra(EVENT_TYPE_KEY, RESPONSE_TYPE);
+    intent.putExtra(NOTIFICATION_RESPONSE_KEY, response);
     enqueueWork(context, intent);
   }
 
@@ -130,6 +145,8 @@ public abstract class BaseNotificationsService extends JobIntentService {
         onNotificationReceived(intent.<Notification>getParcelableExtra(NOTIFICATION_KEY));
       } else if (DROPPED_TYPE.equals(eventType)) {
         onNotificationsDropped();
+      } else if (RESPONSE_TYPE.equals(eventType)) {
+        onNotificationResponseReceived(intent.<NotificationResponse>getParcelableExtra(NOTIFICATION_RESPONSE_KEY));
       } else {
         throw new IllegalArgumentException(String.format("Received event of unrecognized type: %s. Ignoring.", intent.getAction()));
       }
@@ -165,6 +182,14 @@ public abstract class BaseNotificationsService extends JobIntentService {
    * @param notification Notification received
    */
   protected void onNotificationReceived(Notification notification) {
+  }
+
+  /**
+   * Callback called when the notifications system is informed of a new notification response.
+   *
+   * @param response Notification response received
+   */
+  protected void onNotificationResponseReceived(NotificationResponse response) {
   }
 
   /**
