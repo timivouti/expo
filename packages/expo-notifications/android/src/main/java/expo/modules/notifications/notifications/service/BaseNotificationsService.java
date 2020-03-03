@@ -29,7 +29,7 @@ public abstract class BaseNotificationsService extends JobIntentService {
 
   // Intent extras keys
   private static final String NOTIFICATION_KEY = "notification";
-  private static final String NOTIFICATION_REQUEST_KEY = "request";
+  private static final String NOTIFICATION_RESPONSE_KEY = "response";
   private static final String NOTIFICATION_BEHAVIOR_KEY = "behavior";
   private static final String EVENT_TYPE_KEY = "type";
   private static final String RECEIVER_KEY = "receiver";
