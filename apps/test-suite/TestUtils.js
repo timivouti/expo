@@ -2,8 +2,9 @@
 
 import { Platform, UnavailabilityError } from '@unimodules/core';
 import Constants from 'expo-constants';
-import { isDeviceFarm } from './utils/Environment';
+
 import ExponentTest from './ExponentTest';
+import { isDeviceFarm } from './utils/Environment';
 
 function browserSupportsWebGL() {
   try {
