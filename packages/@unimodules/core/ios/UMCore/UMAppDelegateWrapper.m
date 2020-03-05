@@ -124,58 +124,6 @@ static dispatch_once_t onceToken;
   return result;
 }
 
-#pragma mark - Notifications
-
-- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)token
-{
-  SEL selector = @selector(application:didRegisterForRemoteNotificationsWithDeviceToken:);
-  NSArray<id<UIApplicationDelegate>> *subcontractorsArray = [self getSubcontractorsImplementingSelector:selector];
-  
-  for (id<UIApplicationDelegate> subcontractor in subcontractorsArray) {
-    [subcontractor application:application didRegisterForRemoteNotificationsWithDeviceToken:token];
-  }
-}
-
-- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)err
-{
-  SEL selector = @selector(application:didFailToRegisterForRemoteNotificationsWithError:);
-  NSArray<id<UIApplicationDelegate>> *subcontractorsArray = [self getSubcontractorsImplementingSelector:selector];
-  
-  for(id<UIApplicationDelegate> subcontractor in subcontractorsArray) {
-    [subcontractor application:application didFailToRegisterForRemoteNotificationsWithError:err];
-  }
-}
-
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler
-{
-  SEL selector = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
-  NSArray<id<UIApplicationDelegate>> *subcontractorsArray = [self getSubcontractorsImplementingSelector:selector];
-  
-  __block NSUInteger subcontractorsLeft = [subcontractorsArray count];
-  __block UIBackgroundFetchResult fetchResult = UIBackgroundFetchResultNoData;
-  __block NSObject *lock = [NSObject new];
-  
-  void (^handler)(UIBackgroundFetchResult) = ^(UIBackgroundFetchResult result) {
-    @synchronized (lock) {
-      if (result == UIBackgroundFetchResultFailed) {
-        fetchResult = UIBackgroundFetchResultFailed;
-      } else if (fetchResult != UIBackgroundFetchResultFailed && result == UIBackgroundFetchResultNewData) {
-        fetchResult = UIBackgroundFetchResultNewData;
-      }
-      
-      subcontractorsLeft--;
-      if (subcontractorsLeft == 0) {
-        completionHandler(fetchResult);
-      }
-    }
-  };
-  
-  for (id<UIApplicationDelegate> subcontractor in subcontractorsArray) {
-    [subcontractor application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:handler];
-  }
-}
-
-
 #pragma mark - Subcontractors
 
 - (void)ensureSubcontractorsAreInitialized {
