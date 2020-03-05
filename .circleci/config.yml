@@ -329,36 +329,36 @@ executors:
       GIT_LFS_SKIP_SMUDGE: 1
 
 workflows:
-  docs:
-    jobs:
-      - docs
-      - docs_approve_deploy:
-          type: approval
-          requires:
-            - docs
-          filters:
-            branches:
-              only:
-                - master
-                - /.*all-ci.*/
-      - docs_deploy:
-          requires:
-            - docs_approve_deploy
+  # docs:
+  #   jobs:
+  #     - docs
+  #     - docs_approve_deploy:
+  #         type: approval
+  #         requires:
+  #           - docs
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #               - /.*all-ci.*/
+  #     - docs_deploy:
+  #         requires:
+  #           - docs_approve_deploy
   # JavaScript packages that make up the SDK
-  sdk:
-    jobs:
-      - expo_sdk
-      # E2E SDK testing
-      - web_test_suite
-      - ios_test_suite
+  # sdk:
+  #   jobs:
+  #     - expo_sdk
+  #     # E2E SDK testing
+  #     - web_test_suite
+  #     - ios_test_suite
 
   # Android and iOS clients
   client:
     jobs:
-      - home
-      - expotools
-      - client_android
-      - client_ios
+      # - home
+      # - expotools
+      # - client_android
+      # - client_ios
       # Disabled until further notice
       # See https://exponent-internal.slack.com/archives/C1QNF5L3C/p1576852692010900
       # - test_suite_publish
@@ -366,42 +366,42 @@ workflows:
       #     requires:
       #       - test_suite_publish
       - android_unit_tests
-      - client_android_approve_google_play:
-          type: approval
-          requires:
-            - client_android
-          filters:
-            branches:
-              only:
-                - /sdk-\d+/
-                - /.*all-ci.*/
-      - client_android_release_google_play:
-          requires:
-            - client_android_approve_google_play
-      - client_android_apk_release_approve:
-          type: approval
-          requires:
-            - client_android
-          filters:
-            branches:
-              only:
-                - /.*sdk-\d+/
-                - /.*all-ci.*/
-      - client_android_apk_release:
-          requires:
-            - client_android_apk_release_approve
-      - client_ios_simulator_release_approve:
-          type: approval
-          requires:
-            - client_ios
-          filters:
-            branches:
-              only:
-                - /.*sdk-\d+/
-                - /.*all-ci.*/
-      - client_ios_simulator_release:
-          requires:
-            - client_ios_simulator_release_approve
+      # - client_android_approve_google_play:
+      #     type: approval
+      #     requires:
+      #       - client_android
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /sdk-\d+/
+      #           - /.*all-ci.*/
+      # - client_android_release_google_play:
+      #     requires:
+      #       - client_android_approve_google_play
+      # - client_android_apk_release_approve:
+      #     type: approval
+      #     requires:
+      #       - client_android
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /.*sdk-\d+/
+      #           - /.*all-ci.*/
+      # - client_android_apk_release:
+      #     requires:
+      #       - client_android_apk_release_approve
+      # - client_ios_simulator_release_approve:
+      #     type: approval
+      #     requires:
+      #       - client_ios
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /.*sdk-\d+/
+      #           - /.*all-ci.*/
+      # - client_ios_simulator_release:
+      #     requires:
+      #       - client_ios_simulator_release_approve
 
   shell_app:
     jobs:
@@ -802,6 +802,16 @@ jobs:
           command: nix-shell android/shell.nix --run "expotools android-unit-tests"
           working_directory: ~/expo
       - save_gradle_cache
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/expo/packages/*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
 
   client_android_apk_release:
     executor: js
