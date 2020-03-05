@@ -14,6 +14,8 @@ This is the log of notable changes to the Expo client that are developer-facing.
 
 ### 🐛 Bug fixes
 
+- Fix `Contacts.presentFormAsync` pre-filling. ([#7285](https://github.com/expo/expo/pull/7285) by [@abdelilah](https://github.com/abdelilah) & [@lukmccall](https://github.com/lukmccall))
+
 ## 37.0.0
 
 ### 📚 3rd party library updates
